@@ -4,7 +4,7 @@ from .__version__ import __version__
 import subprocess
 import shutil
 import re
-
+from urllib.parse import urlparse
 class getjs(BHunters):
     """
     B-Hunters GetJS developed by Bormaa
@@ -54,23 +54,30 @@ class getjs(BHunters):
     def process(self, task: Task) -> None:
         source = task.payload["source"]
         domain = task.payload_persistent["domain"]
-        if source == "subrecon":
+        if source == "producer":
             url = task.payload_persistent["domain"]
         else:
             url = task.payload["data"]
+        parsed_url = urlparse(url)
+        subdomain = parsed_url.netloc
+        if not subdomain:
+            subdomain = domain
+
+
+
         self.log.info("Starting processing new url")
         self.log.info(url)
         result=self.scan(url)
         db=self.db
         domains_collection = db["domains"]
-        domain_document = domains_collection.find_one({"Domain": domain})
+        domain_document = domains_collection.find_one({"Domain": subdomain})
         
         if domain_document:
             domain_id = domain_document["_id"]
         else:
             task = Task({"type": "subdomain",
                         "stage": "new"})
-            task.add_payload("domain", domain)
+            task.add_payload("domain", domain,persistent=True)
             task.add_payload("source", "getjs")
             self.send_task(task)
         for i in result:
@@ -82,7 +89,7 @@ class getjs(BHunters):
                     collection.insert_one(new_document)
                     tag_task = Task(
                         {"type": "js", "stage": "new"},
-                        payload={"domain_id": domain,
+                        payload={"domain_id": subdomain,
                         "file": i,
                         "module":"getjs"
                         }
