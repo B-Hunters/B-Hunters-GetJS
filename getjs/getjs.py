@@ -54,16 +54,15 @@ class getjs(BHunters):
     def process(self, task: Task) -> None:
         source = task.payload["source"]
         domain = task.payload_persistent["domain"]
-        if source == "producer":
-            url = task.payload_persistent["domain"]
-        else:
-            url = task.payload["data"]
-        parsed_url = urlparse(url)
-        subdomain = parsed_url.netloc
-        if not subdomain:
-            subdomain = domain
-
-
+        scantype = task.payload_persistent["scantype"]
+        url = task.payload["data"]
+        # if scantype != "single":
+        #     parsed_url = urlparse(url)
+        #     subdomain = parsed_url.netloc
+        #     if not subdomain:
+        #         subdomain = domain
+        # else:
+        subdomain = task.payload["subdomain"]
 
         self.log.info("Starting processing new url")
         self.log.info(url)
@@ -74,23 +73,17 @@ class getjs(BHunters):
         
         if domain_document:
             domain_id = domain_document["_id"]
-        else:
-            task = Task({"type": "subdomain",
-                        "stage": "new"})
-            task.add_payload("domain", domain,persistent=True)
-            task.add_payload("source", "getjs")
-            self.send_task(task)
+        
         for i in result:
             try:
                 collection = db["js"]
                 existing_document = collection.find_one({"url": i})
                 if existing_document is None:
-                    new_document = {"domain_id":domain_id,"url": i, "vulns": [],"nuclei":False}
-                    collection.insert_one(new_document)
                     tag_task = Task(
                         {"type": "js", "stage": "new"},
-                        payload={"domain_id": subdomain,
+                        payload={"domain_id": domain_id,
                         "file": i,
+                        "subdomain": subdomain,
                         "module":"getjs"
                         }
                     )
