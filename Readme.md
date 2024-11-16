@@ -1,6 +1,6 @@
 # B-Hunters-getJS
 
-**This is the module that is responsible for Web path discovery in [B-Hunters Framework](https://github.com/B-Hunters/B-Hunters) using [getJS](https://github.com/003random/getJS).**
+**This is the module that is responsible for JavaScript Extraction in [B-Hunters Framework](https://github.com/B-Hunters/B-Hunters) using [getJS](https://github.com/003random/getJS).**
 
 
 ## Requirements
