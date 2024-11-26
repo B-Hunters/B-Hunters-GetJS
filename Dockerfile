@@ -29,7 +29,7 @@ COPY --from=build /root/go/bin /root/go/bin
 # Install git and unzip (required for Sublist3r and Findomain)
 # RUN apt update && apt install -y git unzip \
 #     && apt clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir b-hunters==1.1.0
+RUN pip install --no-cache-dir b-hunters==1.1.4
 
 # Set environment variables for Go
 ENV PATH="$PATH:/usr/local/go/bin:/root/go/bin:/usr/local/go/bin:$HOME/.local/bin"
