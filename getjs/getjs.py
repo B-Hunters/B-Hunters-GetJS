@@ -76,17 +76,19 @@ class getjs(BHunters):
         
         for i in result:
             try:
-                collection = db["js"]
-                existing_document = collection.find_one({"url": i})
-                if existing_document is None:
-                    tag_task = Task(
-                        {"type": "js", "stage": "new"},
-                        payload={"domain_id": domain_id,
-                        "file": i,
-                        "subdomain": subdomain,
-                        "module":"getjs"
-                        }
-                    )
-                    self.send_task(tag_task)
+                if self.checkjs(i):
+                    
+                    collection = db["js"]
+                    existing_document = collection.find_one({"url": i})
+                    if existing_document is None:
+                        tag_task = Task(
+                            {"type": "js", "stage": "new"},
+                            payload={"domain_id": domain_id,
+                            "file": i,
+                            "subdomain": subdomain,
+                            "module":"getjs"
+                            }
+                        )
+                        self.send_task(tag_task)
             except Exception as e:
                 self.log.error(e)
