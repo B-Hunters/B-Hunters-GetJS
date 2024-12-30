@@ -5,6 +5,8 @@ import subprocess
 import shutil
 import re
 from urllib.parse import urlparse
+from bson.objectid import ObjectId
+
 class getjs(BHunters):
     """
     B-Hunters GetJS developed by Bormaa
@@ -55,6 +57,8 @@ class getjs(BHunters):
         source = task.payload["source"]
         domain = task.payload_persistent["domain"]
         scantype = task.payload_persistent["scantype"]
+        report_id=task.payload_persistent["report_id"]    
+
         url = task.payload["data"]
         # if scantype != "single":
         #     parsed_url = urlparse(url)
@@ -67,12 +71,8 @@ class getjs(BHunters):
         self.log.info("Starting processing new url")
         self.log.info(url)
         result=self.scan(url)
+        self.waitformongo()
         db=self.db
-        domains_collection = db["domains"]
-        domain_document = domains_collection.find_one({"Domain": subdomain})
-        
-        if domain_document:
-            domain_id = domain_document["_id"]
         
         for i in result:
             try:
@@ -83,7 +83,7 @@ class getjs(BHunters):
                     if existing_document is None:
                         tag_task = Task(
                             {"type": "js", "stage": "new"},
-                            payload={"domain_id": domain_id,
+                            payload={
                             "file": i,
                             "subdomain": subdomain,
                             "module":"getjs"
