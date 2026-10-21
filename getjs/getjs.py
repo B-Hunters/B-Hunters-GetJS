@@ -70,7 +70,13 @@ class getjs(BHunters):
 
         self.log.info("Starting processing new url")
         self.log.info(url)
-        result=self.scan(url)
+        self.update_task_status(subdomain,"Started")
+        try:
+            result=self.scan(url)
+        except Exception as e:
+            self.log.error(e)
+            self.update_task_status(subdomain,"Failed")
+            raise
         self.waitformongo()
         db=self.db
         
@@ -92,3 +98,4 @@ class getjs(BHunters):
                         self.send_task(tag_task)
             except Exception as e:
                 self.log.error(e)
+        self.update_task_status(subdomain,"Finished")
