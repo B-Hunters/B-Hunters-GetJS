@@ -23,7 +23,12 @@ RUN git clone --depth 1 --branch ${GETJS_TAG} https://github.com/003random/getJS
 FROM python:3.12-slim
 COPY --from=build /out/getJS /usr/local/bin/getJS
 RUN apt update && apt install -y git && apt clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir b-hunters==1.2.0
+# The shared class is built from this repository, not from the published
+# release: a worker that calls auth_headers(task) against a release that
+# does not have it fails inside the scan.  scripts/build_workers.sh passes
+# the local wheel; the default is the published release.
+ARG B_HUNTERS_WHEEL=b-hunters==1.2.0
+RUN pip install --no-cache-dir ${B_HUNTERS_WHEEL}
 ENV PATH="$PATH:/usr/local/go/bin:/root/go/bin:/usr/local/bin"
 WORKDIR /app/service
 COPY getjs /app/service/getjs
