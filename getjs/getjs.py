@@ -6,6 +6,7 @@ import shutil
 import re
 from urllib.parse import urlparse
 from bson.objectid import ObjectId
+import requests
 
 class getjs(BHunters):
     """
@@ -82,7 +83,7 @@ class getjs(BHunters):
         
         for i in result:
             try:
-                if self.checkjs(i):
+                if is_javascript_url(i):
                     
                     collection = db["js"]
                     existing_document = collection.find_one({"url": i})
@@ -99,3 +100,28 @@ class getjs(BHunters):
             except Exception as e:
                 self.log.error(e)
         self.update_task_status(subdomain,"Finished")
+
+
+#: The media types a server may use for a JavaScript file.  The
+#: ``application/javascript`` type was never registered and RFC 9239
+#: obsoleted it in favour of ``text/javascript``; Flask, Werkzeug and most
+#: modern servers send the latter.  The shared base class in the published
+#: ``b-hunters`` package still only accepts the old type, so the check is
+#: repeated here until a release of the package carries the fix.
+JS_CONTENT_TYPES = (
+    "application/javascript",
+    "text/javascript",
+    "application/x-javascript",
+    "application/ecmascript",
+    "text/ecmascript",
+)
+
+
+def is_javascript_url(url):
+    """Is the URL served as JavaScript?"""
+    try:
+        response = requests.get(url, timeout=10)
+    except Exception:
+        return False
+    media_type = response.headers.get("Content-Type", "").split(";")[0].strip().lower()
+    return media_type in JS_CONTENT_TYPES
