@@ -20,7 +20,7 @@ RUN git clone --depth 1 --branch ${GETJS_TAG} https://github.com/003random/getJS
  && go mod tidy \
  && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/getJS .
 
-FROM python:3.12-slim
+FROM python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
 COPY --from=build /out/getJS /usr/local/bin/getJS
 RUN apt update && apt install -y git && apt clean && rm -rf /var/lib/apt/lists/*
 # The shared class is built from this repository, not from the published
